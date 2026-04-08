@@ -157,12 +157,34 @@ jalankan dengan cara `./kasir_muthu`
 
 Pada saat pengerjaan soal_1 modul 2 ini sempat kebingungan karena ada output `503 service unavailable` saat proses install `gcc` dan `zip` tetapi lupa untuk didokumentasikan karena pada saat ingin back scroll keatas di terminal ke atas, terminal nya ngelag jadi harus di clear, saat dicoba menggunakan wifi my-its terjadi  `503 service unavailable` tetapi jika menggunakan hotspot pribadi aman aman saja.
 
+#### perintah perintah yang ada di soal_1
+
+`cd` digunakan untuk berpindah direktori. command `cd` dipakai untuk masuk ke folder soal_1 ataupun folder yang sesuai dengan yang diinginkan agar seluruh proses dikerjakan di lokasi yang sesuai.
+
+`wget -O` digunakan untuk mengunduh file dari internet. File buku_hutang.csv diambil dari link yang sudah disediakan untuk kemudian digunakan dalam proses selanjutnya.
+
+`ls` digunakan untuk melihat daftar file dan folder yang ada di dalam direktori.
+
+`cat` berfungsi untuk menampilkan isi file ke terminal. Digunakan untuk memastikan isi buku_hutang.csv sudah benar, serta untuk melihat hasil dari file daftar_penunggak.txt.
+
+`gcc` digunakan untuk melakukan kompilasi program C. File kasir_muthu.c diubah menjadi file "executable" agar bisa dijalankan.
+
+`./` ditujukan untuk menjalankan file "executable" hasil kompilasi, yaitu program kasir_muthu.
+
+`mkdir` digunakan untuk membuat direktori baru. Dalam program, perintah ini dipakai untuk membuat folder brankas_kedai.
+
+`cp` digunakan untuk menyalin file dari satu lokasi ke lokasi lain. File buku_hutang.csv disalin ke dalam folder brankas_kedai.
+
+`grep` digunakan untuk mencari teks tertentu di dalam file. Digunakan untuk mengambil data dengan status “Belum Lunas” dari file CSV.
+
+`zip` ini untuk mengompres file atau folder menjadi arsip. Folder brankas_kedai kemudian dikompres menjadi file rahasia_muthu.zip.
+
 
 # Soal 2
 
 ## Deskripsi soal
 
-Soal kedua mengangkat konsep proses yang berjalan di latar belakang atau daemon, yang dianalogikan dengan kehidupan yang terus berjalan meskipun tidak selalu terlihat. Dalam soal ini, diminta untuk membuat program daemon bernama contract_daemon.c yang mampu berjalan secara terus-menerus di background. Program ini harus dapat membuat file contract.txt, menjaga keutuhan isi file tersebut, serta mencatat aktivitas ke dalam file log secara berkala. Selain itu, program juga harus mampu merespon ketika file dihapus atau diubah, serta memberikan pesan khusus ketika proses dihentikan.
+Pada soal 2 ini, soal meminta membuat program daemon yang berjalan di background. Program akan membuat file contract.txt, menjaga agar file tersebut tetap ada dan tidak berubah, serta menuliskan aktivitas ke work.log secara berkala. Jika file dihapus atau diubah, program akan otomatis mengembalikannya seperti semula. Pengerjaannya menggunakan bahasa C dengan konsep daemon seperti `fork` , `setsid`, dan `signal`.
 
 ## Penyelesaian soal_2
 
@@ -170,11 +192,124 @@ Soal kedua mengangkat konsep proses yang berjalan di latar belakang atau daemon,
 
 #### langkah pertama
 
+pertama-tama, kita keluar dari soal_1 lalu buat soal_2, `mkdir soal_2` lalu kita buat direktori soal_2 `mkdir soal_2`, lalu masuk soal_2 `cd soal_1` 
+
+![image link](Assets/gambar_40.png)
+
 #### langkah kedua
+
+selanjutnya, saya menggunakan `cat` lalu membuat file script dengan nama contract_daemon.c yang berisi kode script dibawah ini.
+
+```awk
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <signal.h>
+#include <time.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#define CONTRACT_FILE "contract.txt"
+#define WORK_LOG      "work.log"
+
+void get_timestamp(char *buf, size_t size) {
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+    strftime(buf, size, "%Y-%m-%d %H:%M:%S", t);
+}
+
+void write_log(const char *msg) {
+    FILE *f = fopen(WORK_LOG, "a");
+    if (!f) return;
+    fprintf(f, "%s\n", msg);
+    fclose(f);
+}
+
+void create_contract(int restored) {
+    char ts[64];
+    get_timestamp(ts, sizeof(ts));
+    FILE *f = fopen(CONTRACT_FILE, "w");
+    if (!f) return;
+    fprintf(f, "A promise to keep going, even when unseen.\n");
+    if (restored)
+        fprintf(f, "restored at: %s\n", ts);
+    else
+        fprintf(f, "created at: %s\n", ts);
+    fclose(f);
+}
+
+const char *EXPECTED_LINE1 = "A promise to keep going, even when unseen.\n";
+
+int contract_is_intact() {
+    FILE *f = fopen(CONTRACT_FILE, "r");
+    if (!f) return -1;
+    char line1[256];
+    if (!fgets(line1, sizeof(line1), f)) { fclose(f); return 0; }
+    fclose(f);
+    return strcmp(line1, EXPECTED_LINE1) == 0;
+}
+
+volatile sig_atomic_t keep_running = 1;
+
+void handle_sigterm(int sig) {
+    (void)sig;
+    keep_running = 0;
+}
+
+void daemonize() {
+    pid_t pid = fork();
+    if (pid < 0) exit(EXIT_FAILURE);
+    if (pid > 0) exit(EXIT_SUCCESS);
+    if (setsid() < 0) exit(EXIT_FAILURE);
+    pid = fork();
+    if (pid < 0) exit(EXIT_FAILURE);
+    if (pid > 0) exit(EXIT_SUCCESS);
+    freopen("/dev/null", "r", stdin);
+    freopen("/dev/null", "w", stdout);
+    freopen("/dev/null", "w", stderr);
+}
+
+int main() {
+    daemonize();
+    signal(SIGTERM, handle_sigterm);
+    signal(SIGINT,  handle_sigterm);
+    create_contract(0);
+    const char *statuses[] = {"[awake]", "[drifting]", "[numbness]"};
+    srand((unsigned int)time(NULL));
+    time_t last_log = time(NULL) - 5;
+    while (keep_running) {
+        int intact = contract_is_intact();
+        if (intact == -1) {
+            create_contract(1);
+        } else if (intact == 0) {
+            write_log("contract violated.");
+            create_contract(1);
+        }
+        time_t now = time(NULL);
+        if (now - last_log >= 5) {
+            const char *status = statuses[rand() % 3];
+            char msg[64];
+            snprintf(msg, sizeof(msg), "still working... %s", status);
+            write_log(msg);
+            last_log = now;
+        }
+        sleep(1);
+    }
+    write_log("We really weren't meant to be together");
+    return 0;
+}
+```
 
 #### langkah ketiga
 
+`ls -lh contract_daemon.c` digunakan untuk untuk memastikan bahwa file program sudah berhasil dibuat
+
+![image link](Assets/gambar_40.png)
+
 #### langkah keempat
+
+
 
 #### langkah langkah kelima
 
@@ -183,8 +318,6 @@ Soal kedua mengangkat konsep proses yang berjalan di latar belakang atau daemon,
 
 
 selanjutnya, saya membuat file script dengan nama kasir_muthu.c yang berisi kode script dibawah ini.
-
-
 
 ```awk
 #include <stdio.h>
