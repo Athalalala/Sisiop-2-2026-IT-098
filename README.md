@@ -135,11 +135,19 @@ int main() {
 
 selanjutnya, download zip dengan perintah `sudo apt install zip -y`
 
-#### langkah langkah kelima
+![image link](Assets/gambar_38.png)
 
-compile zip dengan cara `gcc kasir_muthu.c`
+#### langkah kelima
+
+compile zip dengan cara `gcc kasir_muthu.c
 
 ![image link](Assets/gambar_40.png)
+
+#### langkah keenam 
+
+jalankan dengan cara `./kasir_muthu`
+
+![image link](Assets/gambar_41.png)
 
 ## Hasil Output
 
@@ -147,7 +155,7 @@ compile zip dengan cara `gcc kasir_muthu.c`
 
 ## Problem saat pengerjaan
 
-Pada saat pengerjaan soal_1 modul 2 ini sempat kebingungan karena ada output `503 service unavailable` saat proses install `gcc` dan `zip` tetapi lupa untuk didokumentasikan karena pada saat ingin back scroll keatas di terminal ke atas, terminal nya ngelag jadi harus di clear
+Pada saat pengerjaan soal_1 modul 2 ini sempat kebingungan karena ada output `503 service unavailable` saat proses install `gcc` dan `zip` tetapi lupa untuk didokumentasikan karena pada saat ingin back scroll keatas di terminal ke atas, terminal nya ngelag jadi harus di clear, saat dicoba menggunakan wifi my-its terjadi  `503 service unavailable` tetapi jika menggunakan hotspot pribadi aman aman saja.
 
 
 # Soal 2
