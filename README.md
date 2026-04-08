@@ -25,25 +25,42 @@ Pada soal ini diceritakan bahwa komputer kasir milik Uncle Muthu terkena virus. 
 
 ## Penyelesaian soal 1
 
-
-
-#### Berikut langkah - langkah pengerjaan soal_1
+### Berikut langkah - langkah pengerjaan soal_1
 
 #### langkah pertama
 
+**inisiasi**
+
+pertama-tama saat, karena saat mengerjakan sudah ada direktori soal_1, kita buat direktori modul_2 `mkdir modul_2` lalu masuk ke modul_2 `cd modul_2`. selanjutnya buat direktori soal_1 `mkdir soal_1`, lalu masuk soal_1 `cd soal_1` ![image link](Assets/gambar_30.png)  
+
+![image link](Assets/gambar_31.png)
+
+![image link](Assets/gambar_32.png)
+
+![image link](Assets/gambar_33.png)
+
 #### langkah kedua
+
+mendownload spreadsheet yang sudah disediakan dengan cara `wget -O "url link"`
+
+![image link](Assets/gambar_34.png)
+
+setelah itu cek apakah sudah benar dengan cara `cat buku_hutang.csv`
+
+![image link](Assets/gambar_28.png)
+
 
 #### langkah ketiga
 
-#### langkah keempat
+selanjutnya, saya membuat file script dengan nama kasir_muthu.c lalu diisi dengan kode script seperti dibawah ini.
 
-#### langkah langkah kelima
-
-
-
-selanjutnya, saya membuat file script dengan nama kasir_muthu.c yang berisi kode script dibawah ini.
+`cat > kasir_muthu.c << 'EOF'
+"script dari kasir_muthu.c"
+'EOF'`
 
 ```awk
+
+cat > kasir_muthu.c << 'EOF'
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -109,16 +126,28 @@ int main() {
 
     printf(SUCCESS_MSG);
     return 0;
+'EOF'
 }
 
 ```
 
+#### langkah keempat
+
+selanjutnya, download zip dengan perintah `sudo apt install zip -y`
+
+#### langkah langkah kelima
+
+compile zip dengan cara `gcc kasir_muthu.c`
+
+![image link](Assets/gambar_40.png)
+
 ## Hasil Output
 
+![image link](Assets/gambar_39.png)
 
 ## Problem saat pengerjaan
 
-Pada saat pengerjaan soal_1 modul 2 ini sempat kebingungan karena ada output `503 service unavailable` saat proses install `gcc` dan `zip`
+Pada saat pengerjaan soal_1 modul 2 ini sempat kebingungan karena ada output `503 service unavailable` saat proses install `gcc` dan `zip` tetapi lupa untuk didokumentasikan karena pada saat ingin back scroll keatas di terminal ke atas, terminal nya ngelag jadi harus di clear
 
 
 # Soal 2
