@@ -179,4 +179,192 @@ Pada saat pengerjaan soal_1 modul 2 ini sempat kebingungan karena ada output `50
 
 `zip` ini untuk mengompres file atau folder menjadi arsip. Folder brankas_kedai kemudian dikompres menjadi file rahasia_muthu.zip.
 
+# Soal 2
+
+## Deskripsi soal
+
+Pada soal 2 ini, soal meminta membuat program daemon yang berjalan di background. Program akan membuat file contract.txt, menjaga agar file tersebut tetap ada dan tidak berubah, serta menuliskan aktivitas ke work.log secara berkala. Jika file dihapus atau diubah, program akan otomatis mengembalikannya seperti semula. Pengerjaannya menggunakan bahasa C dengan konsep daemon seperti `fork` , `setsid`, dan `signal`.
+
+## Penyelesaian soal_2
+
+### Berikut langkah - langkah pengerjaan soal_2
+
+#### langkah pertama
+
+pertama-tama, kita keluar dari soal_1 lalu buat soal_2, `mkdir soal_2` lalu kita buat direktori soal_2 `mkdir soal_2`, lalu masuk soal_2 `cd soal_1` 
+
+![image link](Assets/gambar_40.png)
+
+#### langkah kedua
+
+selanjutnya, saya menggunakan `cat` lalu membuat file script dengan nama contract_daemon.c yang berisi kode script dibawah ini.
+
+```awk
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <signal.h>
+#include <time.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#define CONTRACT_FILE "contract.txt"
+#define WORK_LOG      "work.log"
+
+void get_timestamp(char *buf, size_t size) {
+    time_t now = time(NULL);
+    struct tm *t = localtime(&now);
+    strftime(buf, size, "%Y-%m-%d %H:%M:%S", t);
+}
+
+void write_log(const char *msg) {
+    FILE *f = fopen(WORK_LOG, "a");
+    if (!f) return;
+    fprintf(f, "%s\n", msg);
+    fclose(f);
+}
+
+void create_contract(int restored) {
+    char ts[64];
+    get_timestamp(ts, sizeof(ts));
+    FILE *f = fopen(CONTRACT_FILE, "w");
+    if (!f) return;
+    fprintf(f, "A promise to keep going, even when unseen.\n");
+    if (restored)
+        fprintf(f, "restored at: %s\n", ts);
+    else
+        fprintf(f, "created at: %s\n", ts);
+    fclose(f);
+}
+
+const char *EXPECTED_LINE1 = "A promise to keep going, even when unseen.\n";
+
+int contract_is_intact() {
+    FILE *f = fopen(CONTRACT_FILE, "r");
+    if (!f) return -1;
+    char line1[256];
+    if (!fgets(line1, sizeof(line1), f)) { fclose(f); return 0; }
+    fclose(f);
+    return strcmp(line1, EXPECTED_LINE1) == 0;
+}
+
+volatile sig_atomic_t keep_running = 1;
+
+void handle_sigterm(int sig) {
+    (void)sig;
+    keep_running = 0;
+}
+
+void daemonize() {
+    pid_t pid = fork();
+    if (pid < 0) exit(EXIT_FAILURE);
+    if (pid > 0) exit(EXIT_SUCCESS);
+    if (setsid() < 0) exit(EXIT_FAILURE);
+    pid = fork();
+    if (pid < 0) exit(EXIT_FAILURE);
+    if (pid > 0) exit(EXIT_SUCCESS);
+    freopen("/dev/null", "r", stdin);
+    freopen("/dev/null", "w", stdout);
+    freopen("/dev/null", "w", stderr);
+}
+
+int main() {
+    daemonize();
+    signal(SIGTERM, handle_sigterm);
+    signal(SIGINT,  handle_sigterm);
+    create_contract(0);
+    const char *statuses[] = {"[awake]", "[drifting]", "[numbness]"};
+    srand((unsigned int)time(NULL));
+    time_t last_log = time(NULL) - 5;
+    while (keep_running) {
+        int intact = contract_is_intact();
+        if (intact == -1) {
+            create_contract(1);
+        } else if (intact == 0) {
+            write_log("contract violated.");
+            create_contract(1);
+        }
+        time_t now = time(NULL);
+        if (now - last_log >= 5) {
+            const char *status = statuses[rand() % 3];
+            char msg[64];
+            snprintf(msg, sizeof(msg), "still working... %s", status);
+            write_log(msg);
+            last_log = now;
+        }
+        sleep(1);
+    }
+    write_log("We really weren't meant to be together");
+    return 0;
+}
+```
+
+#### langkah ketiga
+
+`ls -lh contract_daemon.c` digunakan untuk untuk memastikan bahwa file program sudah berhasil dibuat
+
+![image link](Assets/gambar_40.png)
+
+#### langkah keempat
+
+compile terlebih dahulu `gcc -o contract_daemon contract_daemon.c`
+
+
+#### langkah langkah kelima
+
+Cek contract.txt dengan cara
+
+cat contract.txt
+
+Output yang diharapkan:
+
+A promise to keep going, even when unseen.
+created at: 2026-04-07 18:46:00
+
+## Hasil Output
+
+![image link](Assets/gambar_53.png)
+
+#### langkah langkah keenam
+
+Cek PID untuk nanti di kill
+
+ps aux | grep contract_daemon | grep -v grep
+
+
+#### langkah langkah ketujuh
+
+rm contract.txt
+
+bashsleep 2
+
+bashcat contract.txt
+
+Output yang diharapkan:
+
+A promise to keep going, even when unseen.
+restored at: 2026-04-07 18:xx:xx
+
+#### langkah langkah kedelapan
+
+ubah isi contract.txt dengan cara `echo "hacked!" > contract.txt`
+
+bashsleep 2
+
+bashcat work.log
+
+bashcat contract.txt
+
+Output yang diharapkan di work.log ada baris:
+
+contract violated.
+
+Dan contract.txt sudah kembali:
+A promise to keep going, even when unseen.
+restored at: 2026-04-07 18:xx:xx
+
+## Problem saat pengerjaan
+
+saat pengerjaan ada kendala dibagian output, karena output yang diminta masih salah karena lupa untuk kill PID yang harus dikill terlebih dahulu.
 
