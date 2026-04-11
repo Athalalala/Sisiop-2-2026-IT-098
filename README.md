@@ -193,7 +193,15 @@ Pada soal 2 ini, soal meminta membuat program daemon yang berjalan di background
 
 pertama-tama, kita keluar dari soal_1 lalu buat soal_2, `mkdir soal_2` lalu kita buat direktori soal_2 `mkdir soal_2`, lalu masuk soal_2 `cd soal_1` 
 
-![image link](Assets/gambar_40.png)
+![image link](Assets/gambar_57.png)
+
+![image link](Assets/gambar_42.png)
+
+![image link](Assets/gambar_54.png)
+
+![image link](Assets/gambar_58.png)
+
+
 
 #### langkah kedua
 
@@ -208,16 +216,23 @@ selanjutnya, saya menggunakan `cat` lalu membuat file script dengan nama contrac
 #include <time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+// Library standar yang dibutuhkan untuk I/O, proses, sinyal, dan waktu
+
 
 #define CONTRACT_FILE "contract.txt"
 #define WORK_LOG      "work.log"
+// Nama file kontrak dan log yang digunakan daemon
 
+
+
+// Ambil timestamp saat ini dan simpan ke buffer sebagai string
 void get_timestamp(char *buf, size_t size) {
     time_t now = time(NULL);
     struct tm *t = localtime(&now);
     strftime(buf, size, "%Y-%m-%d %H:%M:%S", t);
 }
 
+// Tulis satu baris pesan ke file log (mode append)
 void write_log(const char *msg) {
     FILE *f = fopen(WORK_LOG, "a");
     if (!f) return;
@@ -225,6 +240,7 @@ void write_log(const char *msg) {
     fclose(f);
 }
 
+// Buat atau pulihkan file kontrak, isi dengan timestamp pembuatan/pemulihan
 void create_contract(int restored) {
     char ts[64];
     get_timestamp(ts, sizeof(ts));
@@ -238,6 +254,8 @@ void create_contract(int restored) {
     fclose(f);
 }
 
+// Cek apakah baris pertama kontrak masih sesuai ekspektasi
+// Return: 1 = utuh, 0 = diubah/rusak, -1 = file hilang
 const char *EXPECTED_LINE1 = "A promise to keep going, even when unseen.\n";
 
 int contract_is_intact() {
@@ -251,11 +269,13 @@ int contract_is_intact() {
 
 volatile sig_atomic_t keep_running = 1;
 
+// Tangkap sinyal SIGTERM/SIGINT dan hentikan loop utama dengan aman
 void handle_sigterm(int sig) {
     (void)sig;
     keep_running = 0;
 }
 
+// Ubah proses menjadi daemon: double fork + lepas dari terminal + tutup I/O
 void daemonize() {
     pid_t pid = fork();
     if (pid < 0) exit(EXIT_FAILURE);
@@ -269,8 +289,10 @@ void daemonize() {
     freopen("/dev/null", "w", stderr);
 }
 
+
 int main() {
     daemonize();
+    // Daftarkan signal handler dan buat kontrak awal saat daemon mulai
     signal(SIGTERM, handle_sigterm);
     signal(SIGINT,  handle_sigterm);
     create_contract(0);
@@ -278,6 +300,7 @@ int main() {
     srand((unsigned int)time(NULL));
     time_t last_log = time(NULL) - 5;
     while (keep_running) {
+    // Pantau kontrak setiap detik — pulihkan jika hilang atau diubah
         int intact = contract_is_intact();
         if (intact == -1) {
             create_contract(1);
@@ -285,6 +308,7 @@ int main() {
             write_log("contract violated.");
             create_contract(1);
         }
+    // Catat status kerja ke log setiap 5 detik dengan status acak
         time_t now = time(NULL);
         if (now - last_log >= 5) {
             const char *status = statuses[rand() % 3];
@@ -295,6 +319,7 @@ int main() {
         }
         sleep(1);
     }
+    // Tulis pesan terakhir ke log saat daemon berhenti
     write_log("We really weren't meant to be together");
     return 0;
 }
