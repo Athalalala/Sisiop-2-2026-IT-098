@@ -327,9 +327,9 @@ int main() {
 
 #### langkah ketiga
 
-`ls -lh contract_daemon.c` digunakan untuk untuk memastikan bahwa file program sudah berhasil dibuat
+`ls contract_daemon` digunakan untuk untuk memastikan bahwa file program sudah berhasil dibuat
 
-![image link](Assets/gambar_40.png)
+![image link](Assets/gambar_61.png)
 
 #### langkah keempat
 
@@ -347,10 +347,6 @@ Output yang diharapkan:
 A promise to keep going, even when unseen.
 created at: 2026-04-07 18:46:00
 
-## Hasil Output
-
-![image link](Assets/gambar_53.png)
-
 #### langkah langkah keenam
 
 Cek PID untuk nanti di kill
@@ -362,9 +358,9 @@ ps aux | grep contract_daemon | grep -v grep
 
 rm contract.txt
 
-bashsleep 2
+sleep 2
 
-bashcat contract.txt
+cat contract.txt
 
 Output yang diharapkan:
 
@@ -382,12 +378,25 @@ bashcat work.log
 bashcat contract.txt
 
 Output yang diharapkan di work.log ada baris:
-
 contract violated.
 
 Dan contract.txt sudah kembali:
 A promise to keep going, even when unseen.
 restored at: 2026-04-07 18:xx:xx
+
+## Hasil Output
+
+![image link](Assets/gambar_53.png)
+
+1. Cek Log 5 Detik
+
+2. Test Hapus File (Requirement 4)
+
+3. Test Modifikasi File (Requirement 5)
+
+4. Test Mematikan Daemon (Requirement 6)
+
+
 
 ## Problem saat pengerjaan
 
