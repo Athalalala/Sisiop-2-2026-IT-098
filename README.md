@@ -371,11 +371,11 @@ restored at: 2026-04-07 18:xx:xx
 
 ubah isi contract.txt dengan cara `echo "hacked!" > contract.txt`
 
-bashsleep 2
+sleep 2
 
-bashcat work.log
+cat work.log
 
-bashcat contract.txt
+cat contract.txt
 
 Output yang diharapkan di work.log ada baris:
 contract violated.
@@ -390,12 +390,21 @@ restored at: 2026-04-07 18:xx:xx
 
 1. Cek Log 5 Detik
 
+![image link](Assets/gambar_62.png)
+
 2. Test Hapus File (Requirement 4)
+
+![image link](Assets/gambar_63.png)
 
 3. Test Modifikasi File (Requirement 5)
 
+![image link](Assets/gambar_64.png)
+
 4. Test Mematikan Daemon (Requirement 6)
 
+![image link](Assets/gambar_65.png)
+
+![image link](Assets/gambar_66.png)
 
 
 ## Problem saat pengerjaan
